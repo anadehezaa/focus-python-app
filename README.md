@@ -1,1 +1,1 @@
-# focus-python-app
+# Focus App
