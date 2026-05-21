@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus time</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+
+    <div id="start-screen">
+        <div class="start-content">
+            <h1>Focus Zone</h1>
+            <p class="blink">Press Enter to start</p>
+        </div>
+    </div>
+
+    <div id="focus-app">
+        <audio id="bell-music">
+            <source src="{{ url_for('static', filename='bell.mp3') }}" type="audio/mpeg">
+        </audio>
+
+        <audio id="bg-music" loop>
+            <source src="{{ url_for('static', filename='music.mp3') }}" type="audio/mpeg">
+        </audio>
+
+        <video autoplay muted loop playsinline id="myVideo">
+            <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
+        </video>
+
+        <div class="container">
+            <div id="timer">25:00</div>
+
+            <div class="controls">
+                <button id="start">Start</button>
+                <button id="reset">Reset</button>
+            </div>
+        </div>
+
+        <div id="alert" class="hidden">
+            <div class="content">
+                <p id="message">message</p>
+                <button id="close">🗙</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const startScreen = document.getElementById('start-screen')
+        const appContainer = document.getElementById('focus-app')
+        const bgMusic = document.getElementById('bg-music');
+        const bellMusic = document.getElementById('bell-music');
+
+        window.addEventListener('keydown', function(event) {
+            if(event.key === 'Enter' || event.keyCode === 13) {
+                startScreen.classList.add('fade-out');
+            }
+        })
+        let timeleft = 25 * 60
+        let timerId = null 
+
+        const timerDisplay = document.getElementById('timer')
+        const startBtn = document.getElementById('start')
+        const resetBtn = document.getElementById('reset')
+
+        function updateDisplay() {
+            const mins = Math.floor(timeleft / 60)
+            const secs = timeleft % 60 
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+        }
+
+        function startTimer() {
+            if(timerId === null) {
+                startBtn.textContent = 'Stop'
+
+                bgMusic.volume = 0.3; 
+                bgMusic.play().catch(error => {
+                    console.log("Audio play was blocked or interrupted:", error);
+                });
+
+                timerId = setInterval(() => {
+                    if(timeleft > 0) {
+                        timeleft --
+                        updateDisplay()
+                    } else {
+                        clearInterval(timerId)
+                        showMessage("Times's up!")
+                        bellMusic.volume = 0.3
+                        bellMusic.play()
+                        resetTimer()
+                    }
+                }, 1000);
+            } else {
+                clearInterval(timerId)
+                timerId = null 
+                startBtn.textContent = 'Start'
+
+                bgMusic.pause()
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerId)
+            timerId = null
+            timeleft = 25 * 60 
+            updateDisplay()
+            startBtn.textContent = 'Start'
+
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+
+        const aalert = document.getElementById('alert')
+        const message = document.getElementById('message')
+        const closeBtn = document.getElementById('close')
+
+        function showMessage(text) {
+            message.textContent = text
+            aalert.classList.remove('hidden')
+        }
+
+        closeBtn.addEventListener('click', () => {
+            aalert.classList.add('hidden')
+        })
+        startBtn.addEventListener('click', startTimer)
+        resetBtn.addEventListener('click', resetTimer)
+    </script>
+    
+</body>
+</html>
